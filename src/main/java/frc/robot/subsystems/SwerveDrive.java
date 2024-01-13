@@ -5,7 +5,7 @@
 package frc.robot.subsystems;
 
 import com.chaos131.pid.PIDTuner;
-import com.chaos131.pid.PIDUpdate;
+import com.chaos131.pid.PIDFValue;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.hal.SimDouble;
@@ -285,14 +285,14 @@ public class SwerveDrive extends SubsystemBase {
     m_moduleAnglePIDTuner.tune();
   }
 
-  private void updateVelocityPIDConstants(PIDUpdate update) {
+  private void updateVelocityPIDConstants(PIDFValue update) {
     m_moduleFL.UpdateVelocityPIDConstants(update);
     m_moduleFR.UpdateVelocityPIDConstants(update);
     m_moduleBR.UpdateVelocityPIDConstants(update);
     m_moduleBL.UpdateVelocityPIDConstants(update);
   }
 
-  private void updateAnglePIDConstants(PIDUpdate update) {
+  private void updateAnglePIDConstants(PIDFValue update) {
     m_moduleFL.UpdateAnglePIDConstants(update);
     m_moduleFR.UpdateAnglePIDConstants(update);
     m_moduleBR.UpdateAnglePIDConstants(update);

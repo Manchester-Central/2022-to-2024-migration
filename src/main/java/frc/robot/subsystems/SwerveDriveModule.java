@@ -4,7 +4,7 @@
 
 package frc.robot.subsystems;
 
-import com.chaos131.pid.PIDUpdate;
+import com.chaos131.pid.PIDFValue;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.sensors.CANCoder;
@@ -154,13 +154,13 @@ public class SwerveDriveModule {
         return wheelRotations * 360;
     }
 
-    public void UpdateVelocityPIDConstants(PIDUpdate update) {
+    public void UpdateVelocityPIDConstants(PIDFValue update) {
         m_velocityController.config_kP(0, update.P);
         m_velocityController.config_kI(0, update.I);
         m_velocityController.config_kD(0, update.D);
     }
 
-    public void UpdateAnglePIDConstants(PIDUpdate update) {
+    public void UpdateAnglePIDConstants(PIDFValue update) {
         m_angleController.config_kP(0, update.P);
         m_angleController.config_kI(0, update.I);
         m_angleController.config_kD(0, update.D);

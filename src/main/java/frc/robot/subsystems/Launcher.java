@@ -5,7 +5,7 @@
 package frc.robot.subsystems;
 
 import com.chaos131.pid.PIDTuner;
-import com.chaos131.pid.PIDUpdate;
+import com.chaos131.pid.PIDFValue;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
@@ -100,7 +100,7 @@ public class Launcher extends SubsystemBase {
     m_pidTuner.tune();
   }
 
-  private void updatePIDF(PIDUpdate update) {
+  private void updatePIDF(PIDFValue update) {
     m_ControllerA.config_kP(0, update.P);
     m_ControllerB.config_kP(0, update.P);
     m_ControllerA.config_kI(0, update.I);
