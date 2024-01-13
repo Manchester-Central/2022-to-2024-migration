@@ -7,6 +7,14 @@
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/FrontLeft": "Field2d",
       "/SmartDashboard/FrontRight": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/Field": {
+        "image": "C:\\Users\\131ch\\Source Code\\2022-to-2024-migration\\assets\\2022-field.png",
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables Info": {
