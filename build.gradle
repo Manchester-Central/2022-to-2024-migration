@@ -47,6 +47,19 @@ wpi.java.debugJni = false
 // Set this to true to enable desktop support.
 def includeDesktopSupport = true
 
+def secretsFile = file("secrets.json")
+def secrets = new groovy.json.JsonSlurper().parseText(secretsFile.text)
+
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/Manchester-Central/CHAOS-Shared-Code")
+        credentials {
+            username = secrets.github_package_auth.username
+            password = secrets.github_package_auth.personal_access_token
+        }
+    }
+}
+
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 // Also defines JUnit 5.
 dependencies {
@@ -69,6 +82,8 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'com.chaos131:shared:2024.0.15'
 }
 
 test {
