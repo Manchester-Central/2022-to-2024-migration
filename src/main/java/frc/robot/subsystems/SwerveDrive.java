@@ -18,6 +18,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -50,7 +51,7 @@ public class SwerveDrive extends SubsystemBase {
   
   private double m_driveToPositionTolerance = Constants.DriveToPositionTolerance;
 
-  public enum SwerveModulePosition {
+  public enum SwerveModuleName {
     FrontLeft, FrontRight, BackLeft, BackRight
   }
 
@@ -77,23 +78,23 @@ public class SwerveDrive extends SubsystemBase {
     SmartDashboard.putData("Field", m_field);
     double width = 0.2957;
     double length = 0.32067;
-    m_moduleFL = new SwerveDriveModule(length, -width, SwerveModulePosition.FrontLeft.name(),
+    m_moduleFL = new SwerveDriveModule(length, -width, SwerveModuleName.FrontLeft.name(),
         Constants.SwerveFrontLeftVelocity,
         Constants.SwerveFrontLeftAngle, Constants.SwerveFrontLeftAbsolute, -110.5);
-    m_moduleFR = new SwerveDriveModule(length, width, SwerveModulePosition.FrontRight.name(),
+    m_moduleFR = new SwerveDriveModule(length, width, SwerveModuleName.FrontRight.name(),
         Constants.SwerveFrontRightVelocity,
         Constants.SwerveFrontRightAngle, Constants.SwerveFrontRightAbsolute, 173.0);
-    m_moduleBL = new SwerveDriveModule(-length, -width, SwerveModulePosition.BackLeft.name(),
+    m_moduleBL = new SwerveDriveModule(-length, -width, SwerveModuleName.BackLeft.name(),
         Constants.SwerveBackLeftVelocity,
         Constants.SwerveBackLeftAngle, Constants.SwerveBackLeftAbsolute, 236.6);
-    m_moduleBR = new SwerveDriveModule(-length, width, SwerveModulePosition.BackRight.name(),
+    m_moduleBR = new SwerveDriveModule(-length, width, SwerveModuleName.BackRight.name(),
         Constants.SwerveBackRightVelocity,
         Constants.SwerveBackRightAngle, Constants.SwerveBackRightAbsolute, -15.7);
     m_kinematics = new SwerveDriveKinematics(m_moduleFL.getLocation(), m_moduleFR.getLocation(),
         m_moduleBR.getLocation(),
         m_moduleBL.getLocation());
     m_gyro = new AHRS(SPI.Port.kMXP);
-    m_odometry = new SwerveDriveOdometry(m_kinematics, getRotation());
+    m_odometry = new SwerveDriveOdometry(m_kinematics, getRotation(), null);
     Robot.LogManager.addNumber("Odometry/X_m", () -> m_odometry.getPoseMeters().getX());
     Robot.LogManager.addNumber("Odometry/Y_m", () -> m_odometry.getPoseMeters().getY());
     Robot.LogManager.addNumber("Odometry/Angle_deg", () -> m_odometry.getPoseMeters().getRotation().getDegrees());
@@ -155,7 +156,11 @@ public class SwerveDrive extends SubsystemBase {
 
   public void updateOdometry(double x, double y, double angle) {
     updateGyroAdjustmentAngle(angle);
-    m_odometry.resetPosition(new Pose2d(x, y, getRotation()), getRotation());
+    m_odometry.resetPosition(getRotation(), getModulePositions(),new Pose2d(x, y, getRotation()));
+  }
+
+  private  SwerveModulePosition[] getModulePositions(){
+    return null; //TODO: Add Position
   }
 
   public void stop() {
@@ -203,7 +208,7 @@ public class SwerveDrive extends SubsystemBase {
     move(speeds);
   }
 
-  public void setSwerveModuleState(SwerveModulePosition moduleID, SwerveModuleState State) {
+  public void setSwerveModuleState(SwerveModuleName moduleID, SwerveModuleState State) {
     m_moduleFL.Stop();
     m_moduleFR.Stop();
     m_moduleBR.Stop();
@@ -226,7 +231,7 @@ public class SwerveDrive extends SubsystemBase {
     }
   }
 
-  public void setSwerveModuleManual(SwerveModulePosition moduleID, double velocityControllerPower,
+  public void setSwerveModuleManual(SwerveModuleName moduleID, double velocityControllerPower,
       double angleControllerPower) {
     m_moduleFL.Stop();
     m_moduleFR.Stop();
@@ -264,7 +269,7 @@ public class SwerveDrive extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_odometry.update(getRotation(), getModuleStates());
+    m_odometry.update(getRotation(), getModulePositions());
     Pose2d pose = getPose();
     Pose2d correctedPose = new Pose2d(pose.getX(), pose.getY(), pose.getRotation());
     m_moduleFL.updatePosition(correctedPose);

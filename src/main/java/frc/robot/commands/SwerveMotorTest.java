@@ -8,14 +8,14 @@ import com.chaos131.gamepads.Gamepad;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.SwerveDrive;
-import frc.robot.subsystems.SwerveDrive.SwerveModulePosition;
+import frc.robot.subsystems.SwerveDrive.SwerveModuleName;
 
 public class SwerveMotorTest extends Command {
   private SwerveDrive m_drive;
   private Gamepad m_controller;
-  private SwerveModulePosition m_moduleID;
+  private SwerveModuleName m_moduleID;
   /** Creates a new SwerveMotorTest. */
-  public SwerveMotorTest(SwerveDrive drive, Gamepad controller, SwerveModulePosition moduleID) {
+  public SwerveMotorTest(SwerveDrive drive, Gamepad controller, SwerveModuleName moduleID) {
     // Use addRequirements() here to declare subsystem dependencies.
     m_drive = drive;
     m_controller = controller;

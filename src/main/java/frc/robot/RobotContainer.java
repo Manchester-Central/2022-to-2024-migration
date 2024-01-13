@@ -55,7 +55,7 @@ import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.FlywheelTable;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Feeder.FeederMode;
-import frc.robot.subsystems.SwerveDrive.SwerveModulePosition;
+import frc.robot.subsystems.SwerveDrive.SwerveModuleName;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
