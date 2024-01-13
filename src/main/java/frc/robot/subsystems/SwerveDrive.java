@@ -92,7 +92,7 @@ public class SwerveDrive extends SubsystemBase {
         Constants.SwerveBackRightAngle, Constants.SwerveBackRightAbsolute, -15.7);
     m_kinematics = new SwerveDriveKinematics(m_moduleFL.getLocation(), m_moduleFR.getLocation(),
         m_moduleBR.getLocation(),
-        m_moduleBL.getLocation());
+        m_moduleBL.getLocation()); 
     m_gyro = new AHRS(SPI.Port.kMXP);
     m_odometry = new SwerveDriveOdometry(m_kinematics, getRotation(), null);
     Robot.LogManager.addNumber("Odometry/X_m", () -> m_odometry.getPoseMeters().getX());
@@ -160,7 +160,9 @@ public class SwerveDrive extends SubsystemBase {
   }
 
   private  SwerveModulePosition[] getModulePositions(){
-    return null; //TODO: Add Position
+    return new SwerveModulePosition[]{
+      m_moduleFL.getPosition(), m_moduleFR.getPosition(), m_moduleBR.getPosition(), m_moduleBL.getPosition(),
+    }; 
   }
 
   public void stop() {

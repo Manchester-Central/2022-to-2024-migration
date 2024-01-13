@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -35,6 +36,8 @@ public class SwerveDriveModule {
     private String m_name;
     private CANCoder m_absoluteEncoder;
     private double m_absoluteAngleOffset;
+    private double m_simDistance = 0;
+
 
     public SwerveDriveModule(double x, double y, String name, int velocityControllerPort,
             int angleControllerPort, int absoluteEncoderPort, double absoluteAngleOffset) {
@@ -64,6 +67,20 @@ public class SwerveDriveModule {
         Robot.LogManager.addNumber(m_name + "/AbsoluteAngleDegrees", () -> GetAbsoluteEncoderAngle());
         Robot.LogManager.addNumber(m_name + "/DriveShaftSpeed", () -> m_velocityController.getSelectedSensorVelocity());
 
+    }
+
+    public SwerveModulePosition getPosition() {
+
+        if (Robot.isSimulation()) {
+            m_simDistance = m_simDistance + m_targetVelocity / Constants.RobotUpdate_hz;
+            return new SwerveModulePosition(m_simDistance, Rotation2d.fromDegrees(m_targetAngle));
+        }
+
+        double distance = m_velocityController.getSelectedSensorPosition();
+        double angle = m_angleController.getSelectedSensorPosition();
+        distance = FalconTicksToMeters(distance);
+        angle = FalconAngleToDegrees(angle);
+        return new SwerveModulePosition(distance, Rotation2d.fromDegrees(angle));
     }
 
     public void autoInit() {
@@ -133,6 +150,15 @@ public class SwerveDriveModule {
         return mps;
     }
 
+    private double FalconTicksToMeters(double counts) {
+        var revolutions = counts / Constants.TalonCountsPerRevolution;
+        var wheelRotations = revolutions / Constants.SwerveModuleVelocityGearRatio;
+        var meters = wheelRotations * Constants.DriveWheelCircumferenceMeters;
+        return meters;
+    }
+
+
+
     private double DegreesToFalconAngle(double degrees) {
         // Calculate ratio of the full rotation of the wheel
 
@@ -186,5 +212,7 @@ public class SwerveDriveModule {
         return m_targetAngle;
 
     }
+
+
 
 }
