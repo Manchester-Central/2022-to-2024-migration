@@ -69,8 +69,8 @@ import frc.robot.subsystems.SwerveDrive.SwerveModulePosition;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
-  private Gamepad m_driver = new Gamepad(0, "Driver", false);
-  private Gamepad m_operator = new Gamepad(1, "Operator", false);
+  private Gamepad m_driver = new Gamepad(0);
+  private Gamepad m_operator = new Gamepad(1);
   // private final ExampleCommand m_autoCommand = new
   // ExampleCommand(m_exampleSubsystem);
 
@@ -133,8 +133,8 @@ public class RobotContainer {
   }
 
   private void configureDebugCommands() {
-    m_driver.getButtonB().whileHeld(new AimToGoal(m_swerveDrive, m_camera));
-    m_driver.getButtonRightStick().whileHeld(new DriverRelativeDriveWithAim(m_swerveDrive, m_driver, m_camera));
+    m_driver.b().whileTrue(new AimToGoal(m_swerveDrive, m_camera).repeatedly());
+    m_driver.rightStick().whileTrue(new DriverRelativeDriveWithAim(m_swerveDrive, m_driver, m_camera).repeatedly());
   }
 
   private void configureMatchCommands() {
@@ -143,51 +143,52 @@ public class RobotContainer {
     Command robotRelativeDrive = new RobotRelativeDrive(m_swerveDrive, m_driver);
 
     // Drive Commands
-    m_driver.getButtonSelect().whenPressed(robotRelativeDrive);
-    m_driver.getButtonStart().whenPressed(driverRelativeDrive);
+    m_driver.back().onTrue(robotRelativeDrive);
+    m_driver.start().onTrue(driverRelativeDrive);
 
-    m_driver.getButtonLeftStick().whileHeld(new EnableSlowDriverSpeed(true));
-    m_driver.getButtonRightStick().whileHeld(new DriverRelativeDriveWithAim(m_swerveDrive, m_driver, m_camera));
+    m_driver.leftStick().whileTrue(new EnableSlowDriverSpeed(true).repeatedly());
+    m_driver.rightStick().whileTrue(new DriverRelativeDriveWithAim(m_swerveDrive, m_driver, m_camera).repeatedly());
 
     // m_driver.getButtonA().whenPressed(new EnableSlowDriverSpeed(true));
     // m_driver.getButtonB().whenPressed(new EnableSlowDriverSpeed(false));
-    m_driver.getButtonY().whileHeld(new DashboardSpeedLauncherShoot(m_launcher, m_feeder));
+    m_driver.y().whileTrue(new DashboardSpeedLauncherShoot(m_launcher, m_feeder).repeatedly());
 
-    m_driver.getButtonLB().whileHeld(new IntakeWithOnlyFeeder(m_feeder));
-    m_driver.getButtonLT().whileHeld(new IntakeCommand(m_feeder, m_intake));
+    m_driver.leftBumper().whileTrue(new IntakeWithOnlyFeeder(m_feeder).repeatedly());
+    m_driver.leftTrigger().whileTrue(new IntakeCommand(m_feeder, m_intake).repeatedly());
 
-    m_driver.getButtonRB()
-        .whileHeld(new SetSpeedLauncherShoot(m_launcher, m_feeder, Constants.DefaultLauncherHighSpeed, FeederMode.LAUNCH_HIGH_BUMPER, Constants.DefaultLauncherTolerance));
-    m_driver.getButtonRT()
-        .whileHeld(new DriverRelativeDriveAimAndLaunch(m_swerveDrive, m_driver, m_camera, m_launcher, m_flywheelTable, m_feeder));
+    m_driver.rightBumper()
+        .whileTrue(new SetSpeedLauncherShoot(m_launcher, m_feeder, Constants.DefaultLauncherHighSpeed, FeederMode.LAUNCH_HIGH_BUMPER, Constants.DefaultLauncherTolerance));
+    m_driver.rightTrigger()
+        .whileTrue(new DriverRelativeDriveAimAndLaunch(m_swerveDrive, m_driver, m_camera, m_launcher, m_flywheelTable, m_feeder).repeatedly());
 
-    m_driver.getPOVNorth().whileActiveOnce(new ZeroNavX(0, m_swerveDrive));
-    m_driver.getPOVEast().whileActiveOnce(new ZeroNavX(90, m_swerveDrive));
-    m_driver.getPOVSouth().whileActiveOnce(new ZeroNavX(180, m_swerveDrive));
-    m_driver.getPOVWest().whileActiveOnce(new ZeroNavX(270, m_swerveDrive));
-    m_driver.getButtonX().whileActiveContinuous(new HandBrake(m_swerveDrive));
+    m_driver.povUp().onTrue(new ZeroNavX(0, m_swerveDrive));
+    m_driver.povRight().onTrue(new ZeroNavX(90, m_swerveDrive));
+    m_driver.povDown().onTrue(new ZeroNavX(180, m_swerveDrive));
+    m_driver.povLeft().onTrue(new ZeroNavX(270, m_swerveDrive));
+    m_driver.x().whileTrue(new HandBrake(m_swerveDrive).repeatedly());
 
     // Operator Commands
-    m_operator.getButtonA().whileHeld(new IntakeCommand(m_feeder, m_intake));
-    m_operator.getButtonB().whileHeld(new RunCommand(() -> m_intake.ManualIntake(1.0), m_intake)
-        .alongWith(new SetFeederMode(m_feeder, FeederMode.BOTTOM_ONLY)));
-    m_operator.getButtonX().whileHeld(new SetFeederMode(m_feeder, FeederMode.LAUNCH_CAMERA));
-    m_operator.getButtonY().whileHeld(new Output(m_feeder, m_intake));
+    m_operator.a().whileTrue(new IntakeCommand(m_feeder, m_intake).repeatedly());
+    m_operator.b().whileTrue(new RunCommand(() -> m_intake.ManualIntake(1.0), m_intake)
+        .alongWith(new SetFeederMode(m_feeder, FeederMode.BOTTOM_ONLY)).repeatedly());
+    m_operator.x().whileTrue(new SetFeederMode(m_feeder, FeederMode.LAUNCH_CAMERA).repeatedly());
+    m_operator.y().whileTrue(new Output(m_feeder, m_intake).repeatedly());
 
-    m_operator.getButtonRB().whileHeld(new CameraLauncherShoot(m_launcher, m_camera, m_feeder, m_flywheelTable));
-    m_operator.getButtonRT()
-        .whileHeld(new SetSpeedLauncherShoot(m_launcher, m_feeder, Constants.DefaultLauncherLowSpeed, FeederMode.LAUNCH_LOW_BUMPER, Constants.DefaultLauncherToleranceLowBumper));
+    m_operator.rightBumper().whileTrue(new CameraLauncherShoot(m_launcher, m_camera, m_feeder, m_flywheelTable).repeatedly());
+    m_operator.rightTrigger()
+        .whileTrue(new SetSpeedLauncherShoot(m_launcher, m_feeder, Constants.DefaultLauncherLowSpeed,
+         FeederMode.LAUNCH_LOW_BUMPER, Constants.DefaultLauncherToleranceLowBumper).repeatedly());
 
-    m_operator.getButtonLB().whileHeld(new IntakeWithOnlyFeeder(m_feeder));
-    m_operator.getButtonLT().whileHeld(new IntakeCommand(m_feeder, m_intake));
+    m_operator.leftBumper().whileTrue(new IntakeWithOnlyFeeder(m_feeder).repeatedly());
+    m_operator.leftTrigger().whileTrue(new IntakeCommand(m_feeder, m_intake).repeatedly());
 
-    m_operator.getPOVWest().whileHeld(new RunCommand(() -> m_climber.MoveArmUp(), m_climber));
-    m_operator.getPOVEast().whileHeld(new RunCommand(() -> m_climber.MoveArmDown(), m_climber));
-    m_operator.getPOVNorth().whileHeld(new RunCommand(() -> m_climber.ExtendToTop(), m_climber));
-    m_operator.getPOVSouth().whileHeld(new RunCommand(() -> m_climber.ExtendToBottom(), m_climber));
+    m_operator.povLeft().onTrue(new RunCommand(() -> m_climber.MoveArmUp(), m_climber).repeatedly());
+    m_operator.povRight().onTrue(new RunCommand(() -> m_climber.MoveArmDown(), m_climber).repeatedly());
+    m_operator.povUp().onTrue(new RunCommand(() -> m_climber.ExtendToTop(), m_climber).repeatedly());
+    m_operator.povDown().onTrue(new RunCommand(() -> m_climber.ExtendToBottom(), m_climber).repeatedly());
   
-    m_operator.getButtonStart().whileHeld(new RunCommand(() -> m_launcher.MoveHoodUp(), m_launcher));
-    m_operator.getButtonSelect().whileHeld(new RunCommand(() -> m_launcher.MoveHoodDown(), m_launcher));
+    m_operator.start().whileTrue(new RunCommand(() -> m_launcher.MoveHoodUp(), m_launcher).repeatedly());
+    m_operator.back().whileTrue(new RunCommand(() -> m_launcher.MoveHoodDown(), m_launcher).repeatedly());
   }
 
   /**
