@@ -21,12 +21,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.util.TalonFxCHAOS;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 public class Launcher extends SubsystemBase {
   private DoubleSolenoid m_solenoid;
-  private TalonFxCHAOS m_ControllerA;
-  private TalonFxCHAOS m_ControllerB;
+  private TalonFX m_ControllerA;
+  private TalonFX m_ControllerB;
 
   private PIDTuner m_pidTuner;
 
@@ -36,11 +38,14 @@ public class Launcher extends SubsystemBase {
   public Launcher() {
     m_solenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.LauncherSolenoidForward,
         Constants.LauncherSolenoidReverse);
-    m_ControllerA = new TalonFxCHAOS(Constants.LauncherA, "Launcher", "A");
-    m_ControllerB = new TalonFxCHAOS(Constants.LauncherB, "Launcher", "B");
-    m_ControllerA.configOpenloopRamp(0.2);
-    m_ControllerB.configOpenloopRamp(0.2);
+        TalonFXConfiguration configA = new TalonFXConfiguration();
+        TalonFXConfiguration configB = new TalonFXConfiguration();
+    m_ControllerA = new TalonFX(Constants.LauncherA);
+    m_ControllerB = new TalonFX(Constants.LauncherB);
+    configA.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.2;
+    configB.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.2;
     m_ControllerA.setNeutralMode(NeutralMode.Coast);
+    configA.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     m_ControllerB.setNeutralMode(NeutralMode.Coast);
     m_ControllerA.setInverted(InvertType.InvertMotorOutput);
     m_ControllerB.setInverted(InvertType.None);
