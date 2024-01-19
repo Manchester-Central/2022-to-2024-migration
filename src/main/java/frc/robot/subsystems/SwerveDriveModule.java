@@ -6,10 +6,11 @@ package frc.robot.subsystems;
 
 import com.chaos131.pid.PIDFValue;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
-import com.ctre.phoenix.sensors.CANCoder;
-import com.ctre.phoenix.sensors.CANCoderStatusFrame;
 import com.ctre.phoenix.sensors.SensorVelocityMeasPeriod;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,7 +24,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.util.TalonFxCHAOS;
 
 /** Add your docs here. */
 public class SwerveDriveModule {
@@ -31,10 +31,10 @@ public class SwerveDriveModule {
     private Field2d m_field = new Field2d();
     private double m_targetVelocity = 0;
     private double m_targetAngle = 0;
-    private TalonFxCHAOS m_velocityController;
-    private TalonFxCHAOS m_angleController;
+    private TalonFX m_velocityController;
+    private TalonFX m_angleController;
     private String m_name;
-    private CANCoder m_absoluteEncoder;
+    private CANcoder m_absoluteEncoder;
     private double m_absoluteAngleOffset;
     private double m_simDistance = 0;
 
@@ -45,16 +45,24 @@ public class SwerveDriveModule {
         if (RobotBase.isSimulation()) {
             SmartDashboard.putData(name, m_field);
         }
-        m_velocityController = new TalonFxCHAOS(velocityControllerPort, name, "speed");
-        m_angleController = new TalonFxCHAOS(angleControllerPort, name, "steering");
+        m_velocityController = new TalonFX(velocityControllerPort, name);
+        m_angleController = new TalonFX(angleControllerPort, name);
+
+        TalonFXConfiguration velocityConfig = new TalonFXConfiguration();
+        velocityConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        m_velocityController.getConfigurator().apply(velocityConfig);
+
+        TalonFXConfiguration angleConfig = new TalonFXConfiguration();
+        angleConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        m_angleController.getConfigurator().apply(angleConfig);
+        //TODO: Complete rest of Configs
+
         m_angleController.configAllowableClosedloopError(0, DegreesToFalconAngle(0.5)); //TODO Reduce after tuning PID
-        m_velocityController.setNeutralMode(NeutralMode.Coast);
-        m_angleController.setNeutralMode(NeutralMode.Brake);
         m_velocityController.configVelocityMeasurementPeriod(SensorVelocityMeasPeriod.Period_20Ms);
         m_velocityController.configVelocityMeasurementWindow(32);
         teleopInit();
         m_name = name;
-        m_absoluteEncoder = new CANCoder(absoluteEncoderPort);
+        m_absoluteEncoder = new CANcoder(absoluteEncoderPort);
         m_absoluteAngleOffset = absoluteAngleOffset;
         m_absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, Constants.MaxCANStatusFramePeriod);
         var absoluteEncoderAngle = GetAbsoluteEncoderAngle();
