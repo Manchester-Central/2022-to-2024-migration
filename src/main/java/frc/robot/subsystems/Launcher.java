@@ -87,6 +87,8 @@ public class Launcher extends SubsystemBase {
     //   m_ControllerA.set(TalonFXControlMode.Velocity, Constants.DefaultLauncherSpinUpTeleop);
     //   m_ControllerB.set(TalonFXControlMode.Velocity, Constants.DefaultLauncherSpinUpTeleop);
     // }
+    m_ControllerA.set(TalonFXControlMode.PercentOutput, 0);
+    m_ControllerB.set(TalonFXControlMode.PercentOutput, 0);
   }
 
   public void coast() {
