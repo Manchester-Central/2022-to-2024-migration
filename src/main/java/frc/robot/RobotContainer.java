@@ -184,8 +184,8 @@ public class RobotContainer {
 
     m_operator.povLeft().onTrue(new RunCommand(() -> m_climber.MoveArmUp(), m_climber).repeatedly());
     m_operator.povRight().onTrue(new RunCommand(() -> m_climber.MoveArmDown(), m_climber).repeatedly());
-    m_operator.povUp().onTrue(new RunCommand(() -> m_climber.ExtendToTop(), m_climber).repeatedly());
-    m_operator.povDown().onTrue(new RunCommand(() -> m_climber.ExtendToBottom(), m_climber).repeatedly());
+    m_operator.povUp().whileTrue(new RunCommand(() -> m_climber.ExtendToTop(), m_climber).repeatedly());
+    m_operator.povDown().whileTrue(new RunCommand(() -> m_climber.ExtendToBottom(), m_climber).repeatedly());
   
     m_operator.start().whileTrue(new RunCommand(() -> m_launcher.MoveHoodUp(), m_launcher).repeatedly());
     m_operator.back().whileTrue(new RunCommand(() -> m_launcher.MoveHoodDown(), m_launcher).repeatedly());
