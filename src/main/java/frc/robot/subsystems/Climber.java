@@ -8,6 +8,11 @@ import java.security.KeyStore.SecretKeyEntry;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -21,22 +26,33 @@ import frc.robot.util.TalonFxCHAOS;
 public class Climber extends SubsystemBase {
   private DigitalInput m_limitSwitch;
   private DigitalInput m_limitSwitch2;
-  private TalonFxCHAOS m_extensionController;
+  private TalonFX m_extensionController;
   private DoubleSolenoid m_solenoidLeft;
   private DoubleSolenoid m_solenoidRight;
   private double m_downPositionCounts;
   private boolean m_seenBottom;
+  private PositionVoltage m_extensionTarget = new PositionVoltage(0);
 
   /** Creates a new Climber. */
   public Climber() {
-    m_extensionController = new TalonFxCHAOS(Constants.ClimberExtension, "Climber", "Extension");
-    m_extensionController.setNeutralMode(NeutralMode.Brake);
+    m_extensionController = new TalonFX(Constants.ClimberExtension);
+
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+
+    m_extensionController.getConfigurator().apply(config);
+
+    Slot0Configs slot0Configs = new Slot0Configs();
+    slot0Configs.kP = 0.025;
+
+    m_extensionController.getConfigurator().apply(slot0Configs);
+
     m_solenoidLeft = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.ClimberSolenoidLeftForward, Constants.ClimberSolenoidLeftReverse);
     m_solenoidRight = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.ClimberSolenoidRightForward, Constants.ClimberSolenoidRightReverse);
+   
     m_limitSwitch = new DigitalInput(Constants.ExtenderLimitSwitch);
     m_limitSwitch2 = new DigitalInput(Constants.ExtenderLimitSwitch2);
-    m_extensionController.config_kP(0, 0.025);
-    m_extensionController.config_kI(0, 0.0);
+
   }
 
   public boolean hasSeenBottom() {
@@ -53,7 +69,7 @@ public class Climber extends SubsystemBase {
         power = 0;
       }
     }
-    m_extensionController.set(TalonFXControlMode.PercentOutput, power);
+    m_extensionController.set(power);
   }
 
   public void MoveArmUp() {
@@ -75,13 +91,15 @@ public class Climber extends SubsystemBase {
 
   public void ExtendToTop() {
     if(m_seenBottom) {
-      m_extensionController.set(TalonFXControlMode.Position, m_downPositionCounts + 500000);
+
+      m_extensionTarget.Slot = 0; 
+      m_extensionController.setControl(m_extensionTarget.withPosition(m_downPositionCounts + Constants.ClimberExtensionTopRotations));
     }
   }
 
   public void ExtendToBottom() {
     if(m_seenBottom && !isCLimberAtBottom()) {
-      m_extensionController.set(TalonFXControlMode.Position, m_downPositionCounts);
+      m_extensionController.setControl(m_extensionTarget.withPosition(m_downPositionCounts));
     }
   }
 
@@ -89,12 +107,12 @@ public class Climber extends SubsystemBase {
   public void periodic() {
     if (!m_seenBottom) {
       if (isCLimberAtBottom()) {
-        m_downPositionCounts = m_extensionController.getSelectedSensorPosition();
+        m_downPositionCounts = m_extensionController.getRotorPosition().getValueAsDouble();
         m_seenBottom = true;
       }
     }
     SmartDashboard.putBoolean("Climber/At Bottom", isCLimberAtBottom());
-    SmartDashboard.putNumber("Climber/Position", m_extensionController.getSelectedSensorPosition());
+    SmartDashboard.putNumber("Climber/Position", m_extensionController.getRotorPosition().getValueAsDouble());
     
   }
 }

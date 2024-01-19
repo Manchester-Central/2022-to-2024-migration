@@ -4,22 +4,19 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.InvertType;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
-import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.util.TalonFxCHAOS;
 
 public class Feeder extends SubsystemBase {
-  private TalonFxCHAOS m_upperFeeder;
-  private TalonFxCHAOS m_lowerFeeder;
+  private TalonFX m_upperFeeder;
+  private TalonFX m_lowerFeeder;
   private DigitalInput m_beamSensorTop, m_beamSensorMiddle;
-  private double k_intakeSpeed = 0.2;
 
   public enum FeederMode {
     DEFAULT, INTAKE, LAUNCH_LOW_BUMPER, LAUNCH_HIGH_BUMPER, LAUNCH_CAMERA, OUTPUT, BOTTOM_ONLY
@@ -29,18 +26,15 @@ public class Feeder extends SubsystemBase {
 
   /** Creates a new Feeder. */
   public Feeder() {
-    m_upperFeeder = new TalonFxCHAOS(Constants.UpperFeeder, "Feeder", "Upper");
-    m_lowerFeeder = new TalonFxCHAOS(Constants.LowerFeeder, "Feeder", "Lower");
-    m_upperFeeder.configOpenloopRamp(0.2);
-    m_lowerFeeder.configOpenloopRamp(0.2);
-    m_upperFeeder.setNeutralMode(NeutralMode.Brake);
-    m_lowerFeeder.setNeutralMode(NeutralMode.Brake);
+    m_upperFeeder = new TalonFX(Constants.UpperFeeder);
+    m_lowerFeeder = new TalonFX(Constants.LowerFeeder);
 
-    // Lower CAN Utilization. We are only setting percent power to the motors, so we don't need the data
-    m_upperFeeder.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, Constants.MaxCANStatusFramePeriod);
-    m_lowerFeeder.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, Constants.MaxCANStatusFramePeriod);
-    m_upperFeeder.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, Constants.MaxCANStatusFramePeriod);
-    m_lowerFeeder.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, Constants.MaxCANStatusFramePeriod);
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.2;
+
+    m_upperFeeder.getConfigurator().apply(config);
+    m_lowerFeeder.getConfigurator().apply(config);
 
     m_beamSensorTop = new DigitalInput(Constants.FeederBeamSensorTop);
     m_beamSensorMiddle = new DigitalInput(Constants.FeederBeamSensorMiddle);
@@ -55,23 +49,23 @@ public class Feeder extends SubsystemBase {
   }
 
   public void ManualFeed(double powerTop, double powerBottom) {
-    m_upperFeeder.set(TalonFXControlMode.PercentOutput, powerTop);
-    m_lowerFeeder.set(TalonFXControlMode.PercentOutput, powerBottom);
+    m_upperFeeder.set(powerTop);
+    m_lowerFeeder.set(powerBottom);
   }
 
   public void Stop() {
-    m_upperFeeder.set(TalonFXControlMode.PercentOutput, 0.0);
-    m_lowerFeeder.set(TalonFXControlMode.PercentOutput, 0.0);
+    m_upperFeeder.set(0.0);
+    m_lowerFeeder.set(0.0);
   }
 
   public void Both() {
-    m_upperFeeder.set(TalonFXControlMode.PercentOutput, 0.0);
-    m_lowerFeeder.set(TalonFXControlMode.PercentOutput, 0.3);
+    m_upperFeeder.set(0.0);
+    m_lowerFeeder.set(0.3);
   }
 
   public void Bottom() {
-    m_upperFeeder.set(TalonFXControlMode.PercentOutput, 0.0);
-    m_lowerFeeder.set(TalonFXControlMode.PercentOutput, 0.3);
+    m_upperFeeder.set(0.0);
+    m_lowerFeeder.set(0.3);
   }
 
   public boolean IsBallAtTopFeeder() {
