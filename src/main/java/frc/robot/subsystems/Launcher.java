@@ -17,11 +17,14 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
@@ -29,6 +32,8 @@ public class Launcher extends SubsystemBase {
   private DoubleSolenoid m_solenoid;
   private TalonFX m_ControllerA;
   private TalonFX m_ControllerB;
+  private TalonFXConfiguration configA;
+  private TalonFXConfiguration configB;
 
   private PIDTuner m_pidTuner;
 
@@ -38,32 +43,37 @@ public class Launcher extends SubsystemBase {
   public Launcher() {
     m_solenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.LauncherSolenoidForward,
         Constants.LauncherSolenoidReverse);
-        TalonFXConfiguration configA = new TalonFXConfiguration();
-        TalonFXConfiguration configB = new TalonFXConfiguration();
+    configA = new TalonFXConfiguration();
+    configB = new TalonFXConfiguration();
     m_ControllerA = new TalonFX(Constants.LauncherA);
     m_ControllerB = new TalonFX(Constants.LauncherB);
     configA.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.2;
     configB.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.2;
-    m_ControllerA.setNeutralMode(NeutralMode.Coast);
     configA.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    m_ControllerB.setNeutralMode(NeutralMode.Coast);
-    m_ControllerA.setInverted(InvertType.InvertMotorOutput);
-    m_ControllerB.setInverted(InvertType.None);
-    m_ControllerA.configPeakOutputReverse(0);
-    m_ControllerB.configPeakOutputReverse(0);
-    m_ControllerA.configVelocityMeasurementPeriod(SensorVelocityMeasPeriod.Period_10Ms);
-    m_ControllerB.configVelocityMeasurementPeriod(SensorVelocityMeasPeriod.Period_10Ms);
-    m_ControllerA.configVelocityMeasurementWindow(1);
-    m_ControllerB.configVelocityMeasurementWindow(1);
+    configB.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+  
+    configA.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    configA.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    configA.MotorOutput.PeakReverseDutyCycle = 0;
+    configB.MotorOutput.PeakReverseDutyCycle = 0;
+    configA.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+    configB.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+    m_ControllerA.getConfigurator().apply(configA);
+    m_ControllerB.getConfigurator().apply(configB);
+   
+    /*Revisit if Launcher inconsistancies
     m_ControllerA.configVoltageCompSaturation(12.4);
+    configA.Voltage.
     m_ControllerB.configVoltageCompSaturation(12.4);
 
     m_ControllerA.enableVoltageCompensation(true);
-    m_ControllerB.enableVoltageCompensation(true);
+    m_ControllerB.enableVoltageCompensation(true);*/
 
     // Lower CAN Utilization. We are reading data off controllerA, so we can slow the rate of status updates from B
+    /*Revisit if Launcher inconsistancies
     m_ControllerB.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, Constants.MaxCANStatusFramePeriod);
-    m_ControllerB.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, Constants.MaxCANStatusFramePeriod);
+    configB.MotorOutput.
+    m_ControllerB.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, Constants.MaxCANStatusFramePeriod);*/
 
     double velocityP = 0.075;
     double velocityI = 0.000;
@@ -71,17 +81,18 @@ public class Launcher extends SubsystemBase {
     double velocityF = 0.055; // k_f = (PERCENT_POWER X 1023) / OBSERVED_VELOCITY 0.023
     m_pidTuner = new PIDTuner("Launcher", Robot.EnablePIDTuning, velocityP, velocityI, velocityD, velocityF, this::updatePIDF);
 
-    Robot.LogManager.addNumber("Launcher/Speed2", () -> m_ControllerA.getSelectedSensorVelocity());
+    Robot.LogManager.addNumber("Launcher/Speed2", () -> m_ControllerA.getVelocity().getValueAsDouble());
+    
   }
 
   public void ManualLaunch(double power) {
-    m_ControllerA.set(TalonFXControlMode.PercentOutput, power);
-    m_ControllerB.set(TalonFXControlMode.PercentOutput, power);
+    m_ControllerA.set(power);
+    m_ControllerB.set(power);
   }
 
   public void SetTargetRPM(double rpm) {
-    m_ControllerA.set(TalonFXControlMode.Velocity, rpm);
-    m_ControllerB.set(TalonFXControlMode.Velocity, rpm);
+    m_ControllerA.set(rpm);
+    m_ControllerB.set(rpm);
   }
 
   public void spinUpSpeed() {
@@ -95,25 +106,27 @@ public class Launcher extends SubsystemBase {
   }
 
   public void coast() {
-    m_ControllerA.set(TalonFXControlMode.PercentOutput, 0);
-    m_ControllerB.set(TalonFXControlMode.PercentOutput, 0);
+    m_ControllerA.set(0);
+    m_ControllerB.set(0);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Launcher/Speed", m_ControllerA.getSelectedSensorVelocity(0));
+    SmartDashboard.putNumber("Launcher/Speed", m_ControllerA.getVelocity().getValueAsDouble());
     m_pidTuner.tune();
   }
 
   private void updatePIDF(PIDFValue update) {
-    m_ControllerA.config_kP(0, update.P);
-    m_ControllerB.config_kP(0, update.P);
-    m_ControllerA.config_kI(0, update.I);
-    m_ControllerB.config_kI(0, update.I);
-    m_ControllerA.config_kD(0, update.D);
-    m_ControllerB.config_kD(0, update.D);
-    m_ControllerA.config_kF(0, update.F);
-    m_ControllerB.config_kF(0, update.F);
+    configA.Slot0.kP = (update.P);
+    configB.Slot0.kP = (update.P);
+    configA.Slot0.kI = (update.I);
+    configB.Slot0.kI = (update.I);
+    configA.Slot0.kD = (update.D);
+    configB.Slot0.kD = (update.D);
+    configA.Slot0.kV = (update.F);
+    configA.Slot0.kV = (update.F);
+    m_ControllerA.getConfigurator().apply(configA);
+    m_ControllerB.getConfigurator().apply(configB);
 }
 
   public void MoveHoodUp() {
@@ -130,7 +143,7 @@ public class Launcher extends SubsystemBase {
 
   public boolean isAtTargetSpeed(double targetRpm) {
     SmartDashboard.putNumber("Launcher/TargetSpeed", targetRpm);
-    var currentRpm = m_ControllerA.getSelectedSensorVelocity();
+    var currentRpm = m_ControllerA.getVelocity().getValueAsDouble();
     return currentRpm > targetRpm - m_speedTolerance && currentRpm < targetRpm + m_speedTolerance;
   }
 }
