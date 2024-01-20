@@ -35,7 +35,7 @@ public abstract class BaseLauncherShoot extends Command {
   public final void execute() {
     var speed = getTargetSpeed();
     if (getTargetSpeed() != DoNotLaunchSpeed) {
-      m_launcher.SetTargetRPM(speed);
+      m_launcher.SetTargetSpeed(speed);
 
       if (m_launcher.isAtTargetSpeed(speed)) {
         m_feeder.setFeederMode(m_feederMode);

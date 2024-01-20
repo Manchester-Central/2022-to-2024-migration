@@ -80,6 +80,7 @@ public final class Constants {
     public final static double DefaultFeederLaunchSpeed = 0.25;
     public final static double DefaultLauncherSpinUpTeleop = DefaultLauncherLowSpeed;
     public final static double DefaultLauncherSpinUpAuto = 5000;
+    public final static double LauncherWheelCircumference = Math.PI * 0.1; // 10 Centimeters wheel
 
     // Target position on field
     public final static double GoalX = 8.0; // TODO: Get real values
