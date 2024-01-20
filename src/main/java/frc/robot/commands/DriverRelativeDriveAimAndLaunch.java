@@ -40,7 +40,7 @@ public class DriverRelativeDriveAimAndLaunch extends BaseRelativeDrive {
     m_drive.resetDriveToPosition();
     m_feeder.setFeederMode(FeederMode.DEFAULT);
     var speed = m_flywheelTable.getIdealTarget(-25).getSpeed();
-    m_launcher.SetTargetRPM(speed);
+    m_launcher.SetTargetSpeed(speed);
   }
 
   @Override
@@ -53,7 +53,7 @@ public class DriverRelativeDriveAimAndLaunch extends BaseRelativeDrive {
       omegaSpeed = m_drive.getTargetOmega();
 
       var speed = getTargetSpeed();
-      m_launcher.SetTargetRPM(speed);
+      m_launcher.SetTargetSpeed(speed);
 
       if (m_launcher.isAtTargetSpeed(speed) && m_drive.isAtTargetAngle()) {
         m_feeder.setFeederMode(FeederMode.LAUNCH_CAMERA);

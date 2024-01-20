@@ -27,6 +27,7 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 
 public class Launcher extends SubsystemBase {
   private DoubleSolenoid m_solenoid;
@@ -34,6 +35,7 @@ public class Launcher extends SubsystemBase {
   private TalonFX m_ControllerB;
   private TalonFXConfiguration configA;
   private TalonFXConfiguration configB;
+  private VelocityVoltage m_velocityTarget = new VelocityVoltage(0);
 
   private PIDTuner m_pidTuner;
 
@@ -57,7 +59,9 @@ public class Launcher extends SubsystemBase {
     configA.MotorOutput.PeakReverseDutyCycle = 0;
     configB.MotorOutput.PeakReverseDutyCycle = 0;
     configA.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+    configA.Feedback.SensorToMechanismRatio = Constants.TalonCountsPerRevolution / 100;
     configB.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+    configB.Feedback.SensorToMechanismRatio = Constants.TalonCountsPerRevolution / 100;
     m_ControllerA.getConfigurator().apply(configA);
     m_ControllerB.getConfigurator().apply(configB);
    
@@ -90,9 +94,15 @@ public class Launcher extends SubsystemBase {
     m_ControllerB.set(power);
   }
 
-  public void SetTargetRPM(double rpm) {
-    m_ControllerA.set(rpm);
-    m_ControllerB.set(rpm);
+  public void SetTargetSpeed(double countsPer10ms) {
+    // m_ControllerA.set(rpm / Constants.TalonCountsPerRevolution);
+    // m_ControllerB.set(rpm / Constants.TalonCountsPerRevolution);
+    m_velocityTarget.Slot = 0;
+    // m_ControllerA.setControl(m_velocityTarget.withVelocity(countsPer10ms * Constants.LauncherWheelCircumference));
+    // m_ControllerB.setControl(m_velocityTarget.withVelocity(countsPer10ms * Constants.LauncherWheelCircumference));
+    m_ControllerA.setControl(m_velocityTarget.withVelocity(countsPer10ms));
+    m_ControllerB.setControl(m_velocityTarget.withVelocity(countsPer10ms));
+
   }
 
   public void spinUpSpeed() {
