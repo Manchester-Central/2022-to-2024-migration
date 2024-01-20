@@ -7,9 +7,14 @@ package frc.robot.subsystems;
 import com.chaos131.pid.PIDFValue;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.sensors.SensorVelocityMeasPeriod;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,6 +32,10 @@ import frc.robot.Robot;
 
 /** Add your docs here. */
 public class SwerveDriveModule {
+    private TalonFXConfiguration m_velocityConfig = new TalonFXConfiguration();
+    private TalonFXConfiguration m_angleConfig = new TalonFXConfiguration();
+    private VelocityVoltage m_velocityVoltageMps = new VelocityVoltage(0);
+    private PositionVoltage m_positionVoltageRotations = new PositionVoltage(0);
     private Translation2d m_location;
     private Field2d m_field = new Field2d();
     private double m_targetVelocity = 0;
@@ -47,34 +56,39 @@ public class SwerveDriveModule {
         }
         m_velocityController = new TalonFX(velocityControllerPort, name);
         m_angleController = new TalonFX(angleControllerPort, name);
+        m_absoluteEncoder = new CANcoder(absoluteEncoderPort);
 
-        TalonFXConfiguration velocityConfig = new TalonFXConfiguration();
-        velocityConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        m_velocityController.getConfigurator().apply(velocityConfig);
+        m_velocityConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        m_velocityConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+        m_velocityConfig.Feedback.SensorToMechanismRatio = Constants.DriveWheelCircumferenceMeters/Constants.SwerveModuleVelocityGearRatio;
+        // m_velocityController.configVelocityMeasurementPeriod(SensorVelocityMeasPeriod.Period_20Ms);
+        // m_velocityController.configVelocityMeasurementWindow(32);
+        m_velocityController.getConfigurator().apply(m_velocityConfig);
 
-        TalonFXConfiguration angleConfig = new TalonFXConfiguration();
-        angleConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        m_angleController.getConfigurator().apply(angleConfig);
+        m_angleConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        m_angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+        m_angleConfig.Feedback.SensorToMechanismRatio = 1/Constants.SwerveModuleAngleGearRatio;
+        m_angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
+        // m_angleController.configAllowableClosedloopError(0, DegreesToFalconAngle(0.5)); //TODO Reduce after tuning PID
+        m_angleController.getConfigurator().apply(m_angleConfig);
         //TODO: Complete rest of Configs
+        
+        CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
+        m_absoluteEncoder.getConfigurator().apply(canCoderConfig);
+        m_absoluteEncoder.getAbsolutePosition().setUpdateFrequency(1000);
 
-        m_angleController.configAllowableClosedloopError(0, DegreesToFalconAngle(0.5)); //TODO Reduce after tuning PID
-        m_velocityController.configVelocityMeasurementPeriod(SensorVelocityMeasPeriod.Period_20Ms);
-        m_velocityController.configVelocityMeasurementWindow(32);
         teleopInit();
         m_name = name;
-        m_absoluteEncoder = new CANcoder(absoluteEncoderPort);
         m_absoluteAngleOffset = absoluteAngleOffset;
-        m_absoluteEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, Constants.MaxCANStatusFramePeriod);
         var absoluteEncoderAngle = GetAbsoluteEncoderAngle();
         var angleTicksOffset = this.DegreesToFalconAngle(absoluteEncoderAngle);
-        m_angleController.setSelectedSensorPosition(angleTicksOffset);
+        m_angleController.setPosition(angleTicksOffset);
         Robot.LogManager.addNumber(m_name + "/targetVelocityMPS", () -> m_targetVelocity);
         Robot.LogManager.addNumber(m_name + "/targetAngleDegrees", () -> m_targetAngle);
         Robot.LogManager.addNumber(m_name + "/actualVelocityMPS", () -> getCurrentVelocityMPS());
         Robot.LogManager.addNumber(m_name + "/actualAngleDegrees", () -> getCurrentAngleDegrees());
         Robot.LogManager.addNumber(m_name + "/AbsoluteAngleDegrees", () -> GetAbsoluteEncoderAngle());
-        Robot.LogManager.addNumber(m_name + "/DriveShaftSpeed", () -> m_velocityController.getSelectedSensorVelocity());
-
+        Robot.LogManager.addNumber(m_name + "/DriveShaftSpeed", () -> m_velocityController.getVelocity().getValueAsDouble());
     }
 
     public SwerveModulePosition getPosition() {
@@ -84,19 +98,21 @@ public class SwerveDriveModule {
             return new SwerveModulePosition(m_simDistance, Rotation2d.fromDegrees(m_targetAngle));
         }
 
-        double distance = m_velocityController.getSelectedSensorPosition();
-        double angle = m_angleController.getSelectedSensorPosition();
+        double distance = m_velocityController.getPosition().getValueAsDouble();
+        double angle = m_angleController.getPosition().getValueAsDouble();
         distance = FalconTicksToMeters(distance);
         angle = FalconAngleToDegrees(angle);
         return new SwerveModulePosition(distance, Rotation2d.fromDegrees(angle));
     }
 
     public void autoInit() {
-        m_velocityController.configClosedloopRamp(0.65);
+        m_velocityConfig.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0.65;
+        m_velocityController.getConfigurator().apply(m_velocityConfig);
     }
 
     public void teleopInit() {
-        m_velocityController.configClosedloopRamp(0.05);
+        m_angleConfig.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0.05;
+        m_angleController.getConfigurator().apply(m_angleConfig);
     }
 
     public void updatePosition(Pose2d robotPose) {
@@ -106,14 +122,14 @@ public class SwerveDriveModule {
 
     public double getCurrentVelocityMPS() {
         if (RobotBase.isReal()) {
-            return FalconVelocityToMPS(m_velocityController.getSelectedSensorVelocity());
+            return FalconVelocityToMPS(m_velocityController.getVelocity().getValueAsDouble());
         }
         return m_targetVelocity;
     }
 
     public double getCurrentAngleDegrees() {
         if (RobotBase.isReal()) {
-            return FalconAngleToDegrees(m_angleController.getSelectedSensorPosition());
+            return FalconAngleToDegrees(m_angleController.getPosition().getValueAsDouble());
         }
         return m_targetAngle;
     }
@@ -126,13 +142,15 @@ public class SwerveDriveModule {
         targetState = SwerveModuleState.optimize(targetState, Rotation2d.fromDegrees(getCurrentAngleDegrees()));
         m_targetVelocity = targetState.speedMetersPerSecond;
         m_targetAngle = AngleUtil.closestTarget(getCurrentAngleDegrees(), targetState.angle.getDegrees());
-        m_velocityController.set(TalonFXControlMode.Velocity, MPSToFalconVelocity(m_targetVelocity));
-        m_angleController.set(TalonFXControlMode.Position, DegreesToFalconAngle(m_targetAngle));
+        m_velocityVoltageMps.Slot = 0;
+        m_velocityController.setControl(m_velocityVoltageMps.withVelocity(m_targetVelocity));
+        m_positionVoltageRotations.Slot = 0;
+        m_angleController.setControl(m_positionVoltageRotations.withPosition(Rotation2d.fromDegrees(m_absoluteAngleOffset).getRotations()));
     }
 
     public void setManual(double velocityControllerPower, double angleControllerPower) {
-        m_velocityController.set(TalonFXControlMode.PercentOutput, velocityControllerPower);
-        m_angleController.set(TalonFXControlMode.PercentOutput, angleControllerPower);
+        m_velocityController.set(velocityControllerPower);
+        m_angleController.set(angleControllerPower);
     }
 
     public Translation2d getLocation() {
@@ -189,20 +207,26 @@ public class SwerveDriveModule {
     }
 
     public void UpdateVelocityPIDConstants(PIDFValue update) {
-        m_velocityController.config_kP(0, update.P);
-        m_velocityController.config_kI(0, update.I);
-        m_velocityController.config_kD(0, update.D);
+        Slot0Configs slot0Configs = new Slot0Configs();
+        slot0Configs.kP = update.P;
+        slot0Configs.kI = update.I;
+        slot0Configs.kD = update.D;
+        slot0Configs.kV = update.F;
+        m_velocityController.getConfigurator().apply(slot0Configs);
     }
 
     public void UpdateAnglePIDConstants(PIDFValue update) {
-        m_angleController.config_kP(0, update.P);
-        m_angleController.config_kI(0, update.I);
-        m_angleController.config_kD(0, update.D);
+        Slot0Configs slot0Configs = new Slot0Configs();
+        slot0Configs.kP = update.P;
+        slot0Configs.kI = update.I;
+        slot0Configs.kD = update.D;
+        slot0Configs.kV = update.F;
+        m_angleController.getConfigurator().apply(slot0Configs);
     }
 
     public void ResetEncoders() {
-        m_velocityController.setSelectedSensorPosition(0);
-        m_angleController.setSelectedSensorPosition(0);
+        m_velocityController.setPosition(0);
+        m_angleController.setPosition(0);
     }
 
     public void Stop() {
@@ -215,7 +239,7 @@ public class SwerveDriveModule {
 
     private double GetAbsoluteEncoderAngle() {
         if (RobotBase.isReal()) {
-            return 360 - m_absoluteEncoder.getAbsolutePosition() + m_absoluteAngleOffset;
+            return 360 - m_absoluteEncoder.getAbsolutePosition().getValueAsDouble() + m_absoluteAngleOffset;
         }
         return m_targetAngle;
 
