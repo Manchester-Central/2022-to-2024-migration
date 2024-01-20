@@ -74,7 +74,7 @@ public class RobotContainer {
   // private final ExampleCommand m_autoCommand = new
   // ExampleCommand(m_exampleSubsystem);
 
-  public SwerveDrive m_swerveDrive = new SwerveDrive();
+   public SwerveDrive m_swerveDrive = new SwerveDrive();
   private Climber m_climber = new Climber();
   private Camera m_camera = new Camera();
   private Launcher m_launcher = new Launcher();
@@ -91,21 +91,21 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
-    m_autoBuilder.registerCommand("robotRelativeDrive",
-        (ParsedCommand pc) -> new AutoRobotRelativeDrive(pc, m_swerveDrive));
-    m_autoBuilder.registerCommand("driverRelativeDrive",
-        (ParsedCommand pc) -> new AutoDriverRelativeDrive(pc, m_swerveDrive));
-    m_autoBuilder.registerCommand("launch",
-        (ParsedCommand pc) -> new CameraLauncherShoot(m_launcher, m_camera, m_feeder, m_flywheelTable));
-    m_autoBuilder.registerCommand("launchNoCamera",
-        (ParsedCommand pc) -> SetSpeedLauncherShoot.CreateAutoCommand(pc, m_launcher, m_feeder));
-    m_autoBuilder.registerCommand("startingPosition", (ParsedCommand pc) -> new StartingPosition(pc, m_swerveDrive));
-    m_autoBuilder.registerCommand("driveToPosition",
-        (ParsedCommand pc) -> DriveToPosition.CreateAutoCommand(pc, m_swerveDrive));
-    m_autoBuilder.registerCommand("aimToGoal", (ParsedCommand pc) -> new AimToGoal(m_swerveDrive, m_camera));
-    m_autoBuilder.registerCommand("aimLaunch", (ParsedCommand pc) -> new AutoAimLaunch(m_swerveDrive, m_driver, m_camera, m_launcher, m_flywheelTable, m_feeder));
-    m_autoBuilder.registerCommand("spit", (ParsedCommand pc) -> new AutoOutput(m_feeder, m_intake));
-    m_autoBuilder.registerCommand("loadBalls", (ParsedCommand pc) -> new LoadBalls(pc, m_feeder));
+    // m_autoBuilder.registerCommand("robotRelativeDrive",
+    //     (ParsedCommand pc) -> new AutoRobotRelativeDrive(pc, m_swerveDrive));
+    // m_autoBuilder.registerCommand("driverRelativeDrive",
+    //     (ParsedCommand pc) -> new AutoDriverRelativeDrive(pc, m_swerveDrive));
+    // m_autoBuilder.registerCommand("launch",
+    //     (ParsedCommand pc) -> new CameraLauncherShoot(m_launcher, m_camera, m_feeder, m_flywheelTable));
+    // m_autoBuilder.registerCommand("launchNoCamera",
+    //     (ParsedCommand pc) -> SetSpeedLauncherShoot.CreateAutoCommand(pc, m_launcher, m_feeder));
+    // m_autoBuilder.registerCommand("startingPosition", (ParsedCommand pc) -> new StartingPosition(pc, m_swerveDrive));
+    // m_autoBuilder.registerCommand("driveToPosition",
+    //     (ParsedCommand pc) -> DriveToPosition.CreateAutoCommand(pc, m_swerveDrive));
+    // m_autoBuilder.registerCommand("aimToGoal", (ParsedCommand pc) -> new AimToGoal(m_swerveDrive, m_camera));
+    // m_autoBuilder.registerCommand("aimLaunch", (ParsedCommand pc) -> new AutoAimLaunch(m_swerveDrive, m_driver, m_camera, m_launcher, m_flywheelTable, m_feeder));
+    // m_autoBuilder.registerCommand("spit", (ParsedCommand pc) -> new AutoOutput(m_feeder, m_intake));
+    // m_autoBuilder.registerCommand("loadBalls", (ParsedCommand pc) -> new LoadBalls(pc, m_feeder));
   }
 
   /**
@@ -117,15 +117,15 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    Command driverRelativeDrive = new DriverRelativeDrive(m_swerveDrive, m_driver);
+     Command driverRelativeDrive = new DriverRelativeDrive(m_swerveDrive, m_driver);
 
     // Default Commands
-    m_swerveDrive.setDefaultCommand(driverRelativeDrive);
-    m_climber.setDefaultCommand(new ClimberDefault(m_climber, m_operator));
-    m_intake.setDefaultCommand(new IntakeDefault(m_intake));
-    m_launcher.setDefaultCommand(new LauncherDefault(m_launcher));
-    m_feeder.setDefaultCommand(new FeederDefault(m_feeder));
-    m_camera.setDefaultCommand(new CameraDefault(m_camera));
+     m_swerveDrive.setDefaultCommand(driverRelativeDrive);
+     m_climber.setDefaultCommand(new ClimberDefault(m_climber, m_operator));
+     m_intake.setDefaultCommand(new IntakeDefault(m_intake));
+     m_launcher.setDefaultCommand(new LauncherDefault(m_launcher));
+     m_feeder.setDefaultCommand(new FeederDefault(m_feeder));
+     m_camera.setDefaultCommand(new CameraDefault(m_camera));
 
     configureMatchCommands();
     // configureDebugCommands();
@@ -133,62 +133,62 @@ public class RobotContainer {
   }
 
   private void configureDebugCommands() {
-    m_driver.b().whileTrue(new AimToGoal(m_swerveDrive, m_camera).repeatedly());
-    m_driver.rightStick().whileTrue(new DriverRelativeDriveWithAim(m_swerveDrive, m_driver, m_camera).repeatedly());
-  }
+  //   m_driver.b().whileTrue(new AimToGoal(m_swerveDrive, m_camera).repeatedly());
+  //   m_driver.rightStick().whileTrue(new DriverRelativeDriveWithAim(m_swerveDrive, m_driver, m_camera).repeatedly());
+   }
 
   private void configureMatchCommands() {
 
-    Command driverRelativeDrive = new DriverRelativeDrive(m_swerveDrive, m_driver);
-    Command robotRelativeDrive = new RobotRelativeDrive(m_swerveDrive, m_driver);
+    // Command driverRelativeDrive = new DriverRelativeDrive(m_swerveDrive, m_driver);
+    // Command robotRelativeDrive = new RobotRelativeDrive(m_swerveDrive, m_driver);
 
     // Drive Commands
-    m_driver.back().onTrue(robotRelativeDrive);
-    m_driver.start().onTrue(driverRelativeDrive);
+    // m_driver.back().onTrue(robotRelativeDrive);
+    // m_driver.start().onTrue(driverRelativeDrive);
 
-    m_driver.leftStick().whileTrue(new EnableSlowDriverSpeed(true).repeatedly());
-    m_driver.rightStick().whileTrue(new DriverRelativeDriveWithAim(m_swerveDrive, m_driver, m_camera).repeatedly());
+    // m_driver.leftStick().whileTrue(new EnableSlowDriverSpeed(true).repeatedly());
+    // m_driver.rightStick().whileTrue(new DriverRelativeDriveWithAim(m_swerveDrive, m_driver, m_camera).repeatedly());
 
-    m_driver.a().onTrue(new EnableSlowDriverSpeed(true));
-    m_driver.b().onTrue(new EnableSlowDriverSpeed(false));
-    m_driver.y().whileTrue(new DashboardSpeedLauncherShoot(m_launcher, m_feeder).repeatedly());
+    // m_driver.a().onTrue(new EnableSlowDriverSpeed(true));
+    // m_driver.b().onTrue(new EnableSlowDriverSpeed(false));
+    //m_driver.y().whileTrue(new DashboardSpeedLauncherShoot(m_launcher, m_feeder).repeatedly());
 
-    m_driver.leftBumper().whileTrue(new IntakeWithOnlyFeeder(m_feeder).repeatedly());
-    m_driver.leftTrigger().whileTrue(new IntakeCommand(m_feeder, m_intake).repeatedly());
+      m_driver.leftBumper().whileTrue(new IntakeWithOnlyFeeder(m_feeder).repeatedly());
+      m_driver.leftTrigger().whileTrue(new IntakeCommand(m_feeder, m_intake).repeatedly());
 
-    m_driver.rightBumper()
-        .whileTrue(new SetSpeedLauncherShoot(m_launcher, m_feeder, Constants.DefaultLauncherHighSpeed, FeederMode.LAUNCH_HIGH_BUMPER, Constants.DefaultLauncherTolerance));
-    m_driver.rightTrigger()
-        .whileTrue(new DriverRelativeDriveAimAndLaunch(m_swerveDrive, m_driver, m_camera, m_launcher, m_flywheelTable, m_feeder).repeatedly());
+     m_driver.rightBumper()
+         .whileTrue(new SetSpeedLauncherShoot(m_launcher, m_feeder, Constants.DefaultLauncherHighSpeed, FeederMode.LAUNCH_HIGH_BUMPER, Constants.DefaultLauncherTolerance));
+    // m_driver.rightTrigger()
+     //  .whileTrue(new DriverRelativeDriveAimAndLaunch(m_swerveDrive, m_driver, m_camera, m_launcher, m_flywheelTable, m_feeder).repeatedly());
 
-    m_driver.povUp().onTrue(new ZeroNavX(0, m_swerveDrive));
-    m_driver.povRight().onTrue(new ZeroNavX(90, m_swerveDrive));
-    m_driver.povDown().onTrue(new ZeroNavX(180, m_swerveDrive));
-    m_driver.povLeft().onTrue(new ZeroNavX(270, m_swerveDrive));
-    m_driver.x().whileTrue(new HandBrake(m_swerveDrive).repeatedly());
+    // m_driver.povUp().onTrue(new ZeroNavX(0, m_swerveDrive));
+    // m_driver.povRight().onTrue(new ZeroNavX(90, m_swerveDrive));
+    // m_driver.povDown().onTrue(new ZeroNavX(180, m_swerveDrive));
+    // m_driver.povLeft().onTrue(new ZeroNavX(270, m_swerveDrive));
+    // m_driver.x().whileTrue(new HandBrake(m_swerveDrive).repeatedly());
 
     // Operator Commands
-    m_operator.a().whileTrue(new IntakeCommand(m_feeder, m_intake).repeatedly());
-    m_operator.b().whileTrue(new RunCommand(() -> m_intake.ManualIntake(1.0), m_intake)
-        .alongWith(new SetFeederMode(m_feeder, FeederMode.BOTTOM_ONLY)).repeatedly());
-    m_operator.x().whileTrue(new SetFeederMode(m_feeder, FeederMode.LAUNCH_CAMERA).repeatedly());
-    m_operator.y().whileTrue(new Output(m_feeder, m_intake).repeatedly());
+    // m_operator.a().whileTrue(new IntakeCommand(m_feeder, m_intake).repeatedly());
+    // m_operator.b().whileTrue(new RunCommand(() -> m_intake.ManualIntake(1.0), m_intake)
+    //     .alongWith(new SetFeederMode(m_feeder, FeederMode.BOTTOM_ONLY)).repeatedly());
+    // m_operator.x().whileTrue(new SetFeederMode(m_feeder, FeederMode.LAUNCH_CAMERA).repeatedly());
+    // m_operator.y().whileTrue(new Output(m_feeder, m_intake).repeatedly());
 
-    m_operator.rightBumper().whileTrue(new CameraLauncherShoot(m_launcher, m_camera, m_feeder, m_flywheelTable).repeatedly());
-    m_operator.rightTrigger()
-        .whileTrue(new SetSpeedLauncherShoot(m_launcher, m_feeder, Constants.DefaultLauncherLowSpeed,
-         FeederMode.LAUNCH_LOW_BUMPER, Constants.DefaultLauncherToleranceLowBumper).repeatedly());
+    // m_operator.rightBumper().whileTrue(new CameraLauncherShoot(m_launcher, m_camera, m_feeder, m_flywheelTable).repeatedly());
+    // m_operator.rightTrigger()
+    //     .whileTrue(new SetSpeedLauncherShoot(m_launcher, m_feeder, Constants.DefaultLauncherLowSpeed,
+    //      FeederMode.LAUNCH_LOW_BUMPER, Constants.DefaultLauncherToleranceLowBumper).repeatedly());
 
-    m_operator.leftBumper().whileTrue(new IntakeWithOnlyFeeder(m_feeder).repeatedly());
-    m_operator.leftTrigger().whileTrue(new IntakeCommand(m_feeder, m_intake).repeatedly());
+    // m_operator.leftBumper().whileTrue(new IntakeWithOnlyFeeder(m_feeder).repeatedly());
+    // m_operator.leftTrigger().whileTrue(new IntakeCommand(m_feeder, m_intake).repeatedly());
 
-    m_operator.povLeft().onTrue(new RunCommand(() -> m_climber.MoveArmUp(), m_climber).repeatedly());
-    m_operator.povRight().onTrue(new RunCommand(() -> m_climber.MoveArmDown(), m_climber).repeatedly());
-    m_operator.povUp().whileTrue(new RunCommand(() -> m_climber.ExtendToTop(), m_climber).repeatedly());
-    m_operator.povDown().whileTrue(new RunCommand(() -> m_climber.ExtendToBottom(), m_climber).repeatedly());
+    // m_operator.povLeft().onTrue(new RunCommand(() -> m_climber.MoveArmUp(), m_climber).repeatedly());
+    // m_operator.povRight().onTrue(new RunCommand(() -> m_climber.MoveArmDown(), m_climber).repeatedly());
+     m_operator.povUp().whileTrue(new RunCommand(() -> m_climber.ExtendToTop(), m_climber).repeatedly());
+     m_operator.povDown().whileTrue(new RunCommand(() -> m_climber.ExtendToBottom(), m_climber).repeatedly());
   
-    m_operator.start().whileTrue(new RunCommand(() -> m_launcher.MoveHoodUp(), m_launcher).repeatedly());
-    m_operator.back().whileTrue(new RunCommand(() -> m_launcher.MoveHoodDown(), m_launcher).repeatedly());
+    // m_operator.start().whileTrue(new RunCommand(() -> m_launcher.MoveHoodUp(), m_launcher).repeatedly());
+    // m_operator.back().whileTrue(new RunCommand(() -> m_launcher.MoveHoodDown(), m_launcher).repeatedly());
   }
 
   /**
@@ -196,9 +196,9 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    var spinUpLauncherStart = new InstantCommand(() -> m_launcher.spinUpSpeed(), m_launcher);
-    return spinUpLauncherStart.andThen(m_autoBuilder.createAutoCommand());
-  }
+  // public Command getAutonomousCommand() {
+  //   // An ExampleCommand will run in autonomous
+  //   // var spinUpLauncherStart = new InstantCommand(() -> m_launcher.spinUpSpeed(), m_launcher);
+  //   // return spinUpLauncherStart.andThen(m_autoBuilder.createAutoCommand());
+  // }
 }

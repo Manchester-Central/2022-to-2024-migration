@@ -55,7 +55,7 @@ public class Launcher extends SubsystemBase {
     configB.MotorOutput.NeutralMode = NeutralModeValue.Coast;
   
     configA.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    configA.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    configB.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     configA.MotorOutput.PeakReverseDutyCycle = 0;
     configB.MotorOutput.PeakReverseDutyCycle = 0;
     configA.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;

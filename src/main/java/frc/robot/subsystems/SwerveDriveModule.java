@@ -54,8 +54,8 @@ public class SwerveDriveModule {
         if (RobotBase.isSimulation()) {
             SmartDashboard.putData(name, m_field);
         }
-        m_velocityController = new TalonFX(velocityControllerPort, name);
-        m_angleController = new TalonFX(angleControllerPort, name);
+        m_velocityController = new TalonFX(velocityControllerPort);
+        m_angleController = new TalonFX(angleControllerPort);
         m_absoluteEncoder = new CANcoder(absoluteEncoderPort);
 
         m_velocityConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -74,8 +74,8 @@ public class SwerveDriveModule {
         //TODO: Complete rest of Configs
         
         CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
-        m_absoluteEncoder.getConfigurator().apply(canCoderConfig);
-        m_absoluteEncoder.getAbsolutePosition().setUpdateFrequency(1000);
+         m_absoluteEncoder.getConfigurator().apply(canCoderConfig);
+         m_absoluteEncoder.getAbsolutePosition().setUpdateFrequency(4);
 
         teleopInit();
         m_name = name;
@@ -142,10 +142,14 @@ public class SwerveDriveModule {
         targetState = SwerveModuleState.optimize(targetState, Rotation2d.fromDegrees(getCurrentAngleDegrees()));
         m_targetVelocity = targetState.speedMetersPerSecond;
         m_targetAngle = AngleUtil.closestTarget(getCurrentAngleDegrees(), targetState.angle.getDegrees());
+
+        // m_velocityController.set(0.3);
+        // m_angleController.set(0.3);
         m_velocityVoltageMps.Slot = 0;
-        m_velocityController.setControl(m_velocityVoltageMps.withVelocity(m_targetVelocity));
-        m_positionVoltageRotations.Slot = 0;
-        m_angleController.setControl(m_positionVoltageRotations.withPosition(Rotation2d.fromDegrees(m_absoluteAngleOffset).getRotations()));
+       // m_velocityController.setControl(m_velocityVoltageMps.withVelocity(m_targetVelocity));
+        m_velocityController.setControl(m_velocityVoltageMps.withVelocity(15));
+       // m_positionVoltageRotations.Slot = 0;
+        //m_angleController.setControl(m_positionVoltageRotations.withPosition(Rotation2d.fromDegrees(m_absoluteAngleOffset).getRotations()));
     }
 
     public void setManual(double velocityControllerPower, double angleControllerPower) {

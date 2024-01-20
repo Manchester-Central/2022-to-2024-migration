@@ -46,7 +46,7 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our
     // autonomous chooser on the dashboard.
-    compressor.enableAnalog(110.0, 115.0);
+    // compressor.enableAnalog(110.0, 115.0);
     m_robotContainer = new RobotContainer();
 
     LogManager.addNumber("GameState", Robot::robotMode);
@@ -130,8 +130,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     TalonFxCHAOS.ResetStickiness();
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    m_robotContainer.m_swerveDrive.autoInit();
+    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    // m_robotContainer.m_swerveDrive.autoInit();
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -153,7 +153,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    m_robotContainer.m_swerveDrive.teleopInit();
+    // m_robotContainer.m_swerveDrive.teleopInit();
   }
 
   /** This function is called periodically during operator control. */
