@@ -105,7 +105,7 @@ public class SwerveDrive extends SubsystemBase {
     double velocityF = 0.12;
     // `this::updateVelocityPIDConstants` is basically shorthand for `(PIDUpdate update) -> updateVelocityPIDConstants(update)`
     m_moduleVelocityPIDTuner = new PIDTuner("Swerve/ModuleVelocity", Robot.EnablePIDTuning, velocityP, velocityI, velocityD, velocityF, this::updateVelocityPIDConstants);
-    double angleP = 0.2 / 3;
+    double angleP = 5;
     double angleI = 0;
     double angleD = 0;
     m_moduleAnglePIDTuner = new PIDTuner("Swerve/ModuleAngle", Robot.EnablePIDTuning, angleP, angleI, angleD, this::updateAnglePIDConstants);

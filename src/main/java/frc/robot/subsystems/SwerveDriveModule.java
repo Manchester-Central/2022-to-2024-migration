@@ -147,7 +147,8 @@ public class SwerveDriveModule {
         // m_angleController.set(0.3);
         m_velocityVoltageMps.Slot = 0;
         m_velocityController.setControl(m_velocityVoltageMps.withVelocity(m_targetVelocity / Constants.ModuleVelocityRotorToSensorRatio));
-       // m_positionVoltageRotations.Slot = 0;
+        m_positionVoltageRotations.Slot = 0;
+        m_angleController.setControl(m_positionVoltageRotations.withPosition(Rotation2d.fromDegrees(2).getRotations()));
         //m_angleController.setControl(m_positionVoltageRotations.withPosition(Rotation2d.fromDegrees(m_absoluteAngleOffset).getRotations()));
     }
 
