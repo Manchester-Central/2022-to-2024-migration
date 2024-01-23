@@ -59,8 +59,8 @@ public class SwerveDriveModule {
         m_absoluteEncoder = new CANcoder(absoluteEncoderPort);
 
         m_velocityConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        m_velocityConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
-        m_velocityConfig.Feedback.SensorToMechanismRatio = Constants.DriveWheelCircumferenceMeters/Constants.SwerveModuleVelocityGearRatio;
+        // m_velocityConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+        // m_velocityConfig.Feedback.SensorToMechanismRatio = Constants.ModuleVelocityRotorToSensorRatio;
         // m_velocityController.configVelocityMeasurementPeriod(SensorVelocityMeasPeriod.Period_20Ms);
         // m_velocityController.configVelocityMeasurementWindow(32);
         m_velocityController.getConfigurator().apply(m_velocityConfig);
@@ -146,8 +146,7 @@ public class SwerveDriveModule {
         // m_velocityController.set(0.3);
         // m_angleController.set(0.3);
         m_velocityVoltageMps.Slot = 0;
-       // m_velocityController.setControl(m_velocityVoltageMps.withVelocity(m_targetVelocity));
-        m_velocityController.setControl(m_velocityVoltageMps.withVelocity(15));
+        m_velocityController.setControl(m_velocityVoltageMps.withVelocity(m_targetVelocity / Constants.ModuleVelocityRotorToSensorRatio));
        // m_positionVoltageRotations.Slot = 0;
         //m_angleController.setControl(m_positionVoltageRotations.withPosition(Rotation2d.fromDegrees(m_absoluteAngleOffset).getRotations()));
     }
@@ -216,6 +215,8 @@ public class SwerveDriveModule {
         slot0Configs.kI = update.I;
         slot0Configs.kD = update.D;
         slot0Configs.kV = update.F;
+        slot0Configs.kS = 0.05;
+
         m_velocityController.getConfigurator().apply(slot0Configs);
     }
 

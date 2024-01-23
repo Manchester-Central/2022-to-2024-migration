@@ -48,7 +48,8 @@ public final class Constants {
                                                                      // below
     public final static double SwerveModuleAngleGearRatio = 144.0 / 14.0; // 12:24 then 14:72 = 14:144
     public final static double TalonCountsPerRevolution = 2048.0;
-
+    public final static double ModuleVelocityRotorToSensorRatio = DriveWheelCircumferenceMeters / SwerveModuleVelocityGearRatio;
+    
     public final static double ClimberExtensionTopRotations = 500000.0 / TalonCountsPerRevolution;
     
     // Absolute max meters per second = 3.8

@@ -99,11 +99,12 @@ public class SwerveDrive extends SubsystemBase {
     Robot.LogManager.addNumber("Odometry/Y_m", () -> m_odometry.getPoseMeters().getY());
     Robot.LogManager.addNumber("Odometry/Angle_deg", () -> m_odometry.getPoseMeters().getRotation().getDegrees());
 
-    double velocityP = 0.1 / 3;
+    double velocityP = (0.1 / 3);
     double velocityI = 0;
     double velocityD = 0;
+    double velocityF = 0.12;
     // `this::updateVelocityPIDConstants` is basically shorthand for `(PIDUpdate update) -> updateVelocityPIDConstants(update)`
-    m_moduleVelocityPIDTuner = new PIDTuner("Swerve/ModuleVelocity", Robot.EnablePIDTuning, velocityP, velocityI, velocityD, this::updateVelocityPIDConstants);
+    m_moduleVelocityPIDTuner = new PIDTuner("Swerve/ModuleVelocity", Robot.EnablePIDTuning, velocityP, velocityI, velocityD, velocityF, this::updateVelocityPIDConstants);
     double angleP = 0.2 / 3;
     double angleI = 0;
     double angleD = 0;
