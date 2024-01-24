@@ -15,6 +15,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -65,6 +66,7 @@ public class SwerveDriveModule {
         m_velocityController.getConfigurator().apply(m_velocityConfig);
 
         m_angleConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        m_angleConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         m_angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         m_angleConfig.Feedback.SensorToMechanismRatio = Constants.SwerveModuleAngleGearRatio;
         //m_angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
