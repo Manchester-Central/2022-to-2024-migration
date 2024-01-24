@@ -39,17 +39,16 @@ public class SwerveDriveModule {
     private Translation2d m_location;
     private Field2d m_field = new Field2d();
     private double m_targetVelocity = 0;
-    private double m_targetAngle = 0;
+    private double m_targetAngleDegrees = 0;
     private TalonFX m_velocityController;
     private TalonFX m_angleController;
     private String m_name;
     private CANcoder m_absoluteEncoder;
-    private double m_absoluteAngleOffset;
     private double m_simDistance = 0;
 
 
     public SwerveDriveModule(double x, double y, String name, int velocityControllerPort,
-            int angleControllerPort, int absoluteEncoderPort, double absoluteAngleOffset) {
+            int angleControllerPort, int absoluteEncoderPort, Rotation2d absoluteAngleOffset) {
         m_location = new Translation2d(x, y);
         if (RobotBase.isSimulation()) {
             SmartDashboard.putData(name, m_field);
@@ -67,42 +66,44 @@ public class SwerveDriveModule {
 
         m_angleConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         m_angleConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
-        m_angleConfig.Feedback.SensorToMechanismRatio = 1/Constants.SwerveModuleAngleGearRatio;
-        m_angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
+        m_angleConfig.Feedback.SensorToMechanismRatio = Constants.SwerveModuleAngleGearRatio;
+        //m_angleConfig.ClosedLoopGeneral.ContinuousWrap = true;
         // m_angleController.configAllowableClosedloopError(0, DegreesToFalconAngle(0.5)); //TODO Reduce after tuning PID
         m_angleController.getConfigurator().apply(m_angleConfig);
-        //TODO: Complete rest of Configs
+
+        // m_angleController.setPosition(0);
         
         CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
+        canCoderConfig.MagnetSensor.MagnetOffset = absoluteAngleOffset.getRotations();
          m_absoluteEncoder.getConfigurator().apply(canCoderConfig);
          m_absoluteEncoder.getAbsolutePosition().setUpdateFrequency(4);
 
         teleopInit();
         m_name = name;
-        m_absoluteAngleOffset = absoluteAngleOffset;
+        
         var absoluteEncoderAngle = GetAbsoluteEncoderAngle();
-        var angleTicksOffset = this.DegreesToFalconAngle(absoluteEncoderAngle);
-        m_angleController.setPosition(angleTicksOffset);
+        //var angleTicksOffset = this.DegreesToFalconAngle(absoluteEncoderAngle);
+         m_angleController.setPosition(absoluteEncoderAngle.getRotations());
         Robot.LogManager.addNumber(m_name + "/targetVelocityMPS", () -> m_targetVelocity);
-        Robot.LogManager.addNumber(m_name + "/targetAngleDegrees", () -> m_targetAngle);
+        Robot.LogManager.addNumber(m_name + "/targetAngleDegrees", () -> m_targetAngleDegrees);
         Robot.LogManager.addNumber(m_name + "/actualVelocityMPS", () -> getCurrentVelocityMPS());
-        Robot.LogManager.addNumber(m_name + "/actualAngleDegrees", () -> getCurrentAngleDegrees());
-        Robot.LogManager.addNumber(m_name + "/AbsoluteAngleDegrees", () -> GetAbsoluteEncoderAngle());
+        Robot.LogManager.addNumber(m_name + "/actualAngleDegrees", () -> getCurrentAngle().getDegrees());
+        Robot.LogManager.addNumber(m_name + "/AbsoluteAngleDegrees", () -> GetAbsoluteEncoderAngle().getDegrees());
         Robot.LogManager.addNumber(m_name + "/DriveShaftSpeed", () -> m_velocityController.getVelocity().getValueAsDouble());
+        Robot.LogManager.addNumber(m_name + "/rotorPosition", () -> m_angleController.getPosition().getValueAsDouble());
     }
 
     public SwerveModulePosition getPosition() {
 
         if (Robot.isSimulation()) {
             m_simDistance = m_simDistance + m_targetVelocity / Constants.RobotUpdate_hz;
-            return new SwerveModulePosition(m_simDistance, Rotation2d.fromDegrees(m_targetAngle));
+            return new SwerveModulePosition(m_simDistance, Rotation2d.fromDegrees(m_targetAngleDegrees));
         }
 
         double distance = m_velocityController.getPosition().getValueAsDouble();
-        double angle = m_angleController.getPosition().getValueAsDouble();
+        Rotation2d angle = getCurrentAngle();
         distance = FalconTicksToMeters(distance);
-        angle = FalconAngleToDegrees(angle);
-        return new SwerveModulePosition(distance, Rotation2d.fromDegrees(angle));
+        return new SwerveModulePosition(distance,angle);
     }
 
     public void autoInit() {
@@ -116,7 +117,7 @@ public class SwerveDriveModule {
     }
 
     public void updatePosition(Pose2d robotPose) {
-        Pose2d modulePose = robotPose.transformBy(new Transform2d(m_location, Rotation2d.fromDegrees(m_targetAngle)));
+        Pose2d modulePose = robotPose.transformBy(new Transform2d(m_location, Rotation2d.fromDegrees(m_targetAngleDegrees)));
         m_field.setRobotPose(modulePose);
     }
 
@@ -127,28 +128,28 @@ public class SwerveDriveModule {
         return m_targetVelocity;
     }
 
-    public double getCurrentAngleDegrees() {
+    public Rotation2d getCurrentAngle() {
         if (RobotBase.isReal()) {
-            return FalconAngleToDegrees(m_angleController.getPosition().getValueAsDouble());
+            return Rotation2d.fromRotations(m_angleController.getPosition().getValueAsDouble());
         }
-        return m_targetAngle;
+        return Rotation2d.fromDegrees(m_targetAngleDegrees);
     }
 
     public SwerveModuleState getState() {
-        return new SwerveModuleState(getCurrentVelocityMPS(), Rotation2d.fromDegrees(getCurrentAngleDegrees()).times(-1));
+        return new SwerveModuleState(getCurrentVelocityMPS(),getCurrentAngle().times(-1));
     }
 
     public void setTargetState(SwerveModuleState targetState) {
-        targetState = SwerveModuleState.optimize(targetState, Rotation2d.fromDegrees(getCurrentAngleDegrees()));
+        targetState = SwerveModuleState.optimize(targetState, getCurrentAngle());
         m_targetVelocity = targetState.speedMetersPerSecond;
-        m_targetAngle = AngleUtil.closestTarget(getCurrentAngleDegrees(), targetState.angle.getDegrees());
+        m_targetAngleDegrees = AngleUtil.closestTarget(getCurrentAngle().getDegrees(), targetState.angle.getDegrees());
 
         // m_velocityController.set(0.3);
         // m_angleController.set(0.3);
         m_velocityVoltageMps.Slot = 0;
         m_velocityController.setControl(m_velocityVoltageMps.withVelocity(m_targetVelocity / Constants.ModuleVelocityRotorToSensorRatio));
         m_positionVoltageRotations.Slot = 0;
-        m_angleController.setControl(m_positionVoltageRotations.withPosition(Rotation2d.fromDegrees(2).getRotations()));
+        m_angleController.setControl(m_positionVoltageRotations.withPosition(Rotation2d.fromDegrees(m_targetAngleDegrees).getRotations()));
         //m_angleController.setControl(m_positionVoltageRotations.withPosition(Rotation2d.fromDegrees(m_absoluteAngleOffset).getRotations()));
     }
 
@@ -189,27 +190,6 @@ public class SwerveDriveModule {
 
 
 
-    private double DegreesToFalconAngle(double degrees) {
-        // Calculate ratio of the full rotation of the wheel
-
-        var wheelRotations = degrees / 360;
-
-        // Convert to rotations of the motor
-
-        var motorRotations = Constants.SwerveModuleAngleGearRatio * wheelRotations;
-
-        // Convert to # of counts
-
-        return motorRotations * Constants.TalonCountsPerRevolution;
-
-    }
-
-    private double FalconAngleToDegrees(double FalconAngle) {
-        var motorRotations = FalconAngle / Constants.TalonCountsPerRevolution;
-        var wheelRotations = motorRotations / Constants.SwerveModuleAngleGearRatio;
-        return wheelRotations * 360;
-    }
-
     public void UpdateVelocityPIDConstants(PIDFValue update) {
         Slot0Configs slot0Configs = new Slot0Configs();
         slot0Configs.kP = update.P;
@@ -238,16 +218,17 @@ public class SwerveDriveModule {
     public void Stop() {
         // Update these values to fix display issues in the simulator
         m_targetVelocity = 0;
-        m_targetAngle = getCurrentAngleDegrees();
+        m_targetAngleDegrees = getCurrentAngle().getDegrees();
 
         setManual(0, 0);
     }
 
-    private double GetAbsoluteEncoderAngle() {
-        if (RobotBase.isReal()) {
-            return 360 - m_absoluteEncoder.getAbsolutePosition().getValueAsDouble() + m_absoluteAngleOffset;
-        }
-        return m_targetAngle;
+    private Rotation2d GetAbsoluteEncoderAngle() {
+        return Rotation2d.fromRotations( m_absoluteEncoder.getAbsolutePosition().getValueAsDouble());
+        // if (RobotBase.isReal()) {
+        //     return 360 - m_absoluteEncoder.getAbsolutePosition().getValueAsDouble() + m_absoluteAngleOffset;
+        // }
+        // return m_targetAngleDegrees;
 
     }
 
