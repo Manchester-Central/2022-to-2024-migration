@@ -54,6 +54,7 @@ import frc.robot.subsystems.Launcher;
 import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.FlywheelTable;
 import frc.robot.subsystems.SwerveDrive;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Feeder.FeederMode;
 import frc.robot.subsystems.SwerveDrive.SwerveModuleName;
 
@@ -74,6 +75,7 @@ public class RobotContainer {
   // private final ExampleCommand m_autoCommand = new
   // ExampleCommand(m_exampleSubsystem);
 
+  private Vision m_Vision = new Vision();
   public SwerveDrive m_swerveDrive = new SwerveDrive();
   private Climber m_climber = new Climber();
   private Camera m_camera = new Camera();
