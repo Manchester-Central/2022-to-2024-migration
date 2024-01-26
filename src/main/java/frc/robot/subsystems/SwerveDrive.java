@@ -77,7 +77,7 @@ public class SwerveDrive extends SubsystemBase {
   /** Creates a new SwerveDrive. */
   public SwerveDrive() {
     SmartDashboard.putData("Field", m_field);
-    double width = 0.2957;
+    double width = -0.2957;
     double length = 0.32067;
     m_moduleFL = new SwerveDriveModule(
       length,
