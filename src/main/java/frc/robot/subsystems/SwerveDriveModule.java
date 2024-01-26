@@ -48,8 +48,16 @@ public class SwerveDriveModule {
     private double m_simDistance = 0;
 
 
-    public SwerveDriveModule(double x, double y, String name, int velocityControllerPort,
-            int angleControllerPort, int absoluteEncoderPort, Rotation2d absoluteAngleOffset) {
+    public SwerveDriveModule(
+        double x, 
+        double y, 
+        String name, 
+        int velocityControllerPort,
+        int angleControllerPort, 
+        int absoluteEncoderPort, 
+        Rotation2d absoluteAngleOffset,
+        InvertedValue velocityMotorDirection
+    ) {
         m_location = new Translation2d(x, y);
         if (RobotBase.isSimulation()) {
             SmartDashboard.putData(name, m_field);
@@ -59,6 +67,7 @@ public class SwerveDriveModule {
         m_absoluteEncoder = new CANcoder(absoluteEncoderPort);
 
         m_velocityConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        m_velocityConfig.MotorOutput.Inverted = velocityMotorDirection;
         // m_velocityConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         // m_velocityConfig.Feedback.SensorToMechanismRatio = Constants.ModuleVelocityRotorToSensorRatio;
         // m_velocityController.configVelocityMeasurementPeriod(SensorVelocityMeasPeriod.Period_20Ms);
