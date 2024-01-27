@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.DriverRelativeDriveWithAimSimple;
 import frc.robot.logging.LogManager;
 import frc.robot.logging.LoggedDatapoints;
+import frc.robot.subsystems.Vision;
 import frc.robot.util.TalonFxCHAOS;
 
 /**

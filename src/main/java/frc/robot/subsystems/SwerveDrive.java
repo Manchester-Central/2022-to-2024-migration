@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.chaos131.pid.PIDTuner;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 import com.chaos131.pid.PIDFValue;
 import com.kauailabs.navx.frc.AHRS;
 
@@ -12,6 +13,8 @@ import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.PoseEstimator;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -34,8 +37,9 @@ public class SwerveDrive extends SubsystemBase {
   private SwerveDriveModule m_moduleBR;
   private SwerveDriveModule m_moduleBL;
   private SwerveDriveKinematics m_kinematics;
-  private SwerveDriveOdometry m_odometry;
+  private SwerveDrivePoseEstimator m_odometry;
   private AHRS m_gyro;
+  private Vision m_vision = new Vision();
 
   private PIDController m_xTranslationPID;
   private PIDController m_yTranslationPID;
@@ -73,6 +77,11 @@ public class SwerveDrive extends SubsystemBase {
     SimAngle.set(angle);
   }
 
+public void poseTransferer(Pose2d Transfer) {
+m_odometry.addVisionMeasurement(Transfer, m_driveToPositionTolerance);
+
+}
+
   /** Creates a new SwerveDrive. */
   public SwerveDrive() {
     SmartDashboard.putData("Field", m_field);
@@ -94,10 +103,10 @@ public class SwerveDrive extends SubsystemBase {
         m_moduleBR.getLocation(),
         m_moduleBL.getLocation()); 
     m_gyro = new AHRS(SPI.Port.kMXP);
-    m_odometry = new SwerveDriveOdometry(m_kinematics, getRotation(), getModulePositions());
-    Robot.LogManager.addNumber("Odometry/X_m", () -> m_odometry.getPoseMeters().getX());
-    Robot.LogManager.addNumber("Odometry/Y_m", () -> m_odometry.getPoseMeters().getY());
-    Robot.LogManager.addNumber("Odometry/Angle_deg", () -> m_odometry.getPoseMeters().getRotation().getDegrees());
+    m_odometry = new SwerveDrivePoseEstimator (m_kinematics, getRotation(), getModulePositions(), getPose());
+    Robot.LogManager.addNumber("Odometry/X_m", () -> m_odometry.getEstimatedPosition().getX());
+    Robot.LogManager.addNumber("Odometry/Y_m", () -> m_odometry.getEstimatedPosition().getY());
+    Robot.LogManager.addNumber("Odometry/Angle_deg", () -> m_odometry.getEstimatedPosition().getRotation().getDegrees());
 
     double velocityP = (0.1 / 3);
     double velocityI = 0;
@@ -259,7 +268,7 @@ public class SwerveDrive extends SubsystemBase {
   }
 
   public Pose2d getPose() {
-    return m_odometry.getPoseMeters();
+    return m_odometry.getEstimatedPosition();
   }
 
   private SwerveModuleState[] getModuleStates() {
@@ -273,6 +282,7 @@ public class SwerveDrive extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_odometry.update(getRotation(), getModulePositions());
+    m_odometry.addVisionMeasurement(m_vision.poseupdate(), m_vision.getLatency());
     Pose2d pose = getPose();
     Pose2d correctedPose = new Pose2d(pose.getX(), pose.getY(), pose.getRotation());
     m_moduleFL.updatePosition(correctedPose);
@@ -291,6 +301,7 @@ public class SwerveDrive extends SubsystemBase {
     m_rotationAutoPIDTuner.tune();
     m_moduleVelocityPIDTuner.tune();
     m_moduleAnglePIDTuner.tune();
+
   }
 
   private void updateVelocityPIDConstants(PIDFValue update) {

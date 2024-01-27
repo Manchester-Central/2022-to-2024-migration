@@ -75,7 +75,7 @@ public class RobotContainer {
   // private final ExampleCommand m_autoCommand = new
   // ExampleCommand(m_exampleSubsystem);
 
-  private Vision m_vision = new Vision();
+  
   public SwerveDrive m_swerveDrive = new SwerveDrive();
   private Climber m_climber = new Climber();
   private Camera m_camera = new Camera();
