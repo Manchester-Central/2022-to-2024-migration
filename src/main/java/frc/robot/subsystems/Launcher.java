@@ -55,7 +55,7 @@ public class Launcher extends SubsystemBase {
     configB.MotorOutput.NeutralMode = NeutralModeValue.Coast;
   
     configA.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    configA.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    configB.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     configA.MotorOutput.PeakReverseDutyCycle = 0;
     configB.MotorOutput.PeakReverseDutyCycle = 0;
     configA.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
@@ -113,8 +113,8 @@ public class Launcher extends SubsystemBase {
     //   m_ControllerA.set(TalonFXControlMode.Velocity, Constants.DefaultLauncherSpinUpTeleop);
     //   m_ControllerB.set(TalonFXControlMode.Velocity, Constants.DefaultLauncherSpinUpTeleop);
     // }
-    m_ControllerA.set(TalonFXControlMode.PercentOutput, 0);
-    m_ControllerB.set(TalonFXControlMode.PercentOutput, 0);
+    m_ControllerA.set(0);
+    m_ControllerB.set(0);
   }
 
   public void coast() {

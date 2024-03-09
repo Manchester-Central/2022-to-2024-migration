@@ -38,7 +38,7 @@ public abstract class BaseRelativeDrive extends Command {
   public void execute() {
     var leftX = m_controller.getLeftX();
     var leftY = m_controller.getLeftY();
-    var rightX = m_controller.getRightX();
+    var rightX = -m_controller.getRightX();
     var multiplier = IsSlowMode ? 0.5 : 1.0;
     if(leftX == 0.0 && leftY == 0.0 && rightX == 0.0 && !m_alwaysMove) {
       //m_drive.adjustToDefaultPosition();

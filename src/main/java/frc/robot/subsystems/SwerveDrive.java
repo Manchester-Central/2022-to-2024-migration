@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.chaos131.pid.PIDTuner;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.chaos131.pid.PIDFValue;
 import com.kauailabs.navx.frc.AHRS;
 
@@ -76,20 +77,48 @@ public class SwerveDrive extends SubsystemBase {
   /** Creates a new SwerveDrive. */
   public SwerveDrive() {
     SmartDashboard.putData("Field", m_field);
-    double width = 0.2957;
+    double width = -0.2957;
     double length = 0.32067;
-    m_moduleFL = new SwerveDriveModule(length, -width, SwerveModuleName.FrontLeft.name(),
-        Constants.SwerveFrontLeftVelocity,
-        Constants.SwerveFrontLeftAngle, Constants.SwerveFrontLeftAbsolute, -110.5);
-    m_moduleFR = new SwerveDriveModule(length, width, SwerveModuleName.FrontRight.name(),
-        Constants.SwerveFrontRightVelocity,
-        Constants.SwerveFrontRightAngle, Constants.SwerveFrontRightAbsolute, 173.0);
-    m_moduleBL = new SwerveDriveModule(-length, -width, SwerveModuleName.BackLeft.name(),
-        Constants.SwerveBackLeftVelocity,
-        Constants.SwerveBackLeftAngle, Constants.SwerveBackLeftAbsolute, 236.6);
-    m_moduleBR = new SwerveDriveModule(-length, width, SwerveModuleName.BackRight.name(),
-        Constants.SwerveBackRightVelocity,
-        Constants.SwerveBackRightAngle, Constants.SwerveBackRightAbsolute, -15.7);
+    m_moduleFL = new SwerveDriveModule(
+      length,
+      -width,
+      SwerveModuleName.FrontLeft.name(),
+      Constants.SwerveFrontLeftVelocity,
+      Constants.SwerveFrontLeftAngle,
+      Constants.SwerveFrontLeftAbsolute,
+      Rotation2d.fromDegrees(109.2),
+      InvertedValue.CounterClockwise_Positive
+    );
+    m_moduleFR = new SwerveDriveModule(
+      length,
+      width,
+      SwerveModuleName.FrontRight.name(),
+      Constants.SwerveFrontRightVelocity,
+      Constants.SwerveFrontRightAngle,
+      Constants.SwerveFrontRightAbsolute,
+      Rotation2d.fromDegrees(5.9),
+      InvertedValue.Clockwise_Positive
+    );
+    m_moduleBL = new SwerveDriveModule(
+      -length,
+      -width,
+      SwerveModuleName.BackLeft.name(),
+      Constants.SwerveBackLeftVelocity,
+      Constants.SwerveBackLeftAngle,
+      Constants.SwerveBackLeftAbsolute,
+      Rotation2d.fromDegrees(123.3),
+      InvertedValue.CounterClockwise_Positive
+    );
+    m_moduleBR = new SwerveDriveModule(
+      -length,
+      width,
+      SwerveModuleName.BackRight.name(),
+      Constants.SwerveBackRightVelocity,
+      Constants.SwerveBackRightAngle,
+      Constants.SwerveBackRightAbsolute,
+      Rotation2d.fromDegrees( -164),
+      InvertedValue.Clockwise_Positive
+    );
     m_kinematics = new SwerveDriveKinematics(m_moduleFL.getLocation(), m_moduleFR.getLocation(),
         m_moduleBR.getLocation(),
         m_moduleBL.getLocation()); 
@@ -99,12 +128,13 @@ public class SwerveDrive extends SubsystemBase {
     Robot.LogManager.addNumber("Odometry/Y_m", () -> m_odometry.getPoseMeters().getY());
     Robot.LogManager.addNumber("Odometry/Angle_deg", () -> m_odometry.getPoseMeters().getRotation().getDegrees());
 
-    double velocityP = 0.1;
+    double velocityP = (0.1 / 3);
     double velocityI = 0;
     double velocityD = 0;
+    double velocityF = 0.12;
     // `this::updateVelocityPIDConstants` is basically shorthand for `(PIDUpdate update) -> updateVelocityPIDConstants(update)`
-    m_moduleVelocityPIDTuner = new PIDTuner("Swerve/ModuleVelocity", Robot.EnablePIDTuning, velocityP, velocityI, velocityD, this::updateVelocityPIDConstants);
-    double angleP = 0.2;
+    m_moduleVelocityPIDTuner = new PIDTuner("Swerve/ModuleVelocity", Robot.EnablePIDTuning, velocityP, velocityI, velocityD, velocityF, this::updateVelocityPIDConstants);
+    double angleP = 48;
     double angleI = 0;
     double angleD = 0;
     m_moduleAnglePIDTuner = new PIDTuner("Swerve/ModuleAngle", Robot.EnablePIDTuning, angleP, angleI, angleD, this::updateAnglePIDConstants);
